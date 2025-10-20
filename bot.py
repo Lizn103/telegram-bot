@@ -8,13 +8,21 @@ from urllib.parse import urljoin
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-# 从环境变量读取 Telegram Bot Token
-TOKEN = os.getenv("BOTTOKEN")
+# ------------------- 自动识别 Token -------------------
+TOKEN = (
+    os.getenv("BOT_TOKEN")
+    or os.getenv("BOTTOKEN")
+    or os.getenv("TOKEN")
+)
+
+if not TOKEN:
+    raise ValueError("❌ 未检测到 Telegram Bot Token,请在 Render 环境变量中设置 BOT_TOKEN 或 BOTTOKEN 或 TOKEN")
 
 # ------------------- 小说爬虫核心 -------------------
 def get_html(url):
     headers = {
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1"
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) "
+                      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1"
     }
     try:
         r = requests.get(url, headers=headers, timeout=15, verify=False)
@@ -26,7 +34,6 @@ def get_html(url):
         return ""
 
 def extract_title(html):
-    """自动识别小说标题"""
     soup = BeautifulSoup(html, "html.parser")
     title_tag = soup.find("title")
     if not title_tag:
@@ -34,10 +41,7 @@ def extract_title(html):
     title = title_tag.get_text()
     title = re.sub(r"[\n\r\t]", "", title)
     title = re.sub(r"(\s*最新章节.*|\s*目录.*|_.*|小说.*)", "", title)
-    title = title.strip()
-    if not title:
-        title = "novel"
-    return title
+    return title.strip() or "novel"
 
 def extract_chapters(list_url, html):
     soup = BeautifulSoup(html, "html.parser")
