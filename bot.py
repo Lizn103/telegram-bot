@@ -9,7 +9,7 @@ from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
 # 从环境变量读取 Telegram Bot Token
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("BOTTOKEN")
 
 # ------------------- 小说爬虫核心 -------------------
 def get_html(url):
